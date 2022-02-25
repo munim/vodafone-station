@@ -78,14 +78,14 @@ export default class VodafoneBox {
       const encryptData = SJCLWrapper.sjclCCMencrypt (this.key, jsData, this.iv, authData, SJCLWrapper.DEFAULT_SJCL_TAGLENGTH);
       const loginData = { 'EncryptData': encryptData, 'Name': name, 'AuthData': authData };
       try {
-        const { data, headers } = await this.put<any>('ajaxSet_Password.php', loginData);
+        const { data, headers } = await this.post<any>('ajaxSet_Password.php', loginData);
         if (data['p_status'].indexOf('Fail') > -1) {
           throw new Error('Login failed, wrong password provided');
         }
         if (data['p_status'].indexOf('Lockout') > -1) {
           throw new Error(`Login failed, locked out for ${data['p_waitTime']}`);
         }
-        if (data['p_status'].indexOf('Match') > -1) {
+        if (data['p_status'].indexOf('Default') > -1) {
           this.sessionId = headers['set-cookie'][0].split('=')[1].split(';')[0];
           this.setCookie(this.sessionId);
           this.csrfNonce = SJCLWrapper.sjclCCMdecrypt(this.key, data.encryptData, this.iv, "nonce", SJCLWrapper.DEFAULT_SJCL_TAGLENGTH);
